@@ -1,0 +1,12 @@
+backend/data/
+*.nc
+
+node_modules/
+dist/
+
+venv/
+.venv/
+backend/venv/
+
+.env
+__pycache__/
