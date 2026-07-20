@@ -94,12 +94,26 @@ tools = [
 gemini_llm = gemini.bind_tools(tools)
 
 groq_llm = groq.bind_tools(tools)
+
+# ---------------------------------
+# Model Routing State
+# ---------------------------------
+
+USE_GROQ_ONLY = False
+
 def invoke_llm(messages):
     """
     Try Gemini first.
-    If Gemini quota or API fails,
-    automatically switch to Groq.
+    If Gemini quota is exceeded,
+    switch permanently to Groq until server restart.
     """
+
+    global USE_GROQ_ONLY
+
+    # Already switched?
+    if USE_GROQ_ONLY:
+        print("\nUsing Groq...\n")
+        return groq_llm.invoke(messages)
 
     try:
         print("\nUsing Gemini...\n")
@@ -108,13 +122,17 @@ def invoke_llm(messages):
     except ResourceExhausted:
 
         print("\nGemini quota exceeded.")
-        print("Switching to Groq...\n")
+        print("Switching permanently to Groq...\n")
+
+        USE_GROQ_ONLY = True
 
         return groq_llm.invoke(messages)
 
     except Exception as e:
 
         print(f"\nGemini Error: {e}")
-        print("Switching to Groq...\n")
+        print("Switching permanently to Groq...\n")
+
+        USE_GROQ_ONLY = True
 
         return groq_llm.invoke(messages)
