@@ -84,7 +84,7 @@ export function ChatPage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] flex-col rounded-[32px] border border-slate-800/80 bg-slate-900/70 backdrop-blur-xl">
+    <div className="mx-auto flex h-[850px] w-full max-w-[1100px] flex-col rounded-[32px] border border-slate-800/80 bg-slate-900/70 backdrop-blur-xl">
       <div className="flex items-center justify-between border-b border-slate-800/80 px-4 py-4 sm:px-6">
         <div>
           <p className="text-sm text-slate-400">AI Conversation</p>
@@ -100,8 +100,8 @@ export function ChatPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6">
-        <div className="mx-auto flex max-w-3xl flex-col gap-4">
+      <div className="flex-1 overflow-y-auto px-6 py-6">
+        <div className="mx-auto flex w-full max-w-[900px] flex-col gap-4">
           {messages.map((message) => (
             <motion.div
               key={message.id}
@@ -148,7 +148,7 @@ export function ChatPage() {
             </div>
           ) : null}
 
-          <div className="rounded-[24px] border border-slate-800/80 bg-slate-950/70 p-4">
+          <div className="w-full rounded-[24px] border border-slate-800/80 bg-slate-950/70 p-4">
             <div className="flex flex-wrap gap-2">
               {starterPrompts.map((prompt) => (
                 <button
@@ -165,8 +165,8 @@ export function ChatPage() {
         </div>
       </div>
 
-      <div className="border-t border-slate-800/80 bg-slate-950/80 p-4 sm:p-6">
-        <div className="mx-auto flex max-w-3xl flex-col gap-3">
+      <div className="border-t border-slate-800/80 bg-slate-950/80 px-6 py-4">
+        <div className="mx-auto flex w-full max-w-[900px] flex-col gap-2">
           <div className="flex items-center gap-2 rounded-[24px] border border-slate-700 bg-slate-900/80 p-2">
             <button className="rounded-full p-2 text-slate-400">
               <Paperclip size={18} />
@@ -188,7 +188,7 @@ export function ChatPage() {
               <Send size={18} />
             </button>
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-slate-400">
+          <div className="mt-1 flex items-center justify-between text-xs text-slate-400">
             <span>Press Enter to send • Shift + Enter for a new line</span>
             <div className="flex gap-2">
               <button className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-2">Stop</button>
