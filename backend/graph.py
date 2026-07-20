@@ -13,7 +13,7 @@ try:
     from .agent import llm_with_tools, tools
 except ImportError:  # pragma: no cover - fallback for direct script execution
     from state import AgentState
-    from agent import llm_with_tools, tools
+    from agent import invoke_llm, tools
 
 # -------------------------------
 # Chatbot Node
@@ -22,7 +22,7 @@ except ImportError:  # pragma: no cover - fallback for direct script execution
 def chatbot(state: AgentState):
     return {
         "messages": [
-            llm_with_tools.invoke(state["messages"])
+            invoke_llm(state["messages"])
         ]
     }
 

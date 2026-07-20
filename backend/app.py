@@ -52,45 +52,75 @@ def health() -> Dict[str, str]:
 
 
 @app.post("/chat", response_model=ChatResponse)
-@app.post("/chat", response_model=ChatResponse)
-def chat(request: ChatRequest) -> ChatResponse:
+def chat(request: ChatRequest):
+
     try:
-        response = graph.invoke(
+
+        result = graph.invoke(
             {"messages": [HumanMessage(content=request.message)]}
         )
 
-        if isinstance(response, dict) and response.get("messages"):
-            content = response["messages"][-1].content
+        messages = result["messages"]
 
-        elif hasattr(response, "content"):
-            content = response.content
+        final_message = messages[-1]
 
-        else:
-            content = "No response generated"
+        content = final_message.content
 
-        # -----------------------------
-        # Extract Gemini text correctly
-        # -----------------------------
-        if isinstance(content, list):
+        print("\n========================")
+        print("FINAL CONTENT")
+        print(content)
+        print(type(content))
+        print("========================\n")
+
+        # -------------------
+        # String
+        # -------------------
+
+        if isinstance(content, str):
+
+            text = content
+
+        # -------------------
+        # Gemini format
+        # -------------------
+
+        elif isinstance(content, list):
+
             text = ""
 
             for part in content:
-                if isinstance(part, dict) and part.get("type") == "text":
-                    text += part.get("text", "")
 
-        elif isinstance(content, str):
-            text = content
+                if isinstance(part, dict):
+
+                    if part.get("type") == "text":
+
+                        text += part.get("text", "")
+
+                else:
+
+                    text += str(part)
+
+        # -------------------
+        # Anything else
+        # -------------------
 
         else:
+
             text = str(content)
 
-        return ChatResponse(response=text)
-
-    except Exception as exc:
-        print("/chat handler:", exc)
+        print("\nRETURNING:\n")
+        print(text)
 
         return ChatResponse(
-            response="The language model is temporarily unavailable. Try again later."
+            response=text
+        )
+
+    except Exception as e:
+
+        print(e)
+
+        return ChatResponse(
+            response=f"ERROR:\n{e}"
         )
 
 

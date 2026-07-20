@@ -6,6 +6,8 @@ if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
+from google.api_core.exceptions import ResourceExhausted
 from dotenv import load_dotenv
 import os
 
@@ -46,9 +48,23 @@ except ImportError:  # pragma: no cover - fallback for direct script execution
 # Local LLM
 # -------------------------
 
-llm = ChatGoogleGenerativeAI(
+# -------------------------
+# Gemini (Primary)
+# -------------------------
+
+gemini = ChatGoogleGenerativeAI(
     model="gemini-3.5-flash",
     google_api_key=os.getenv("GEMINI_API_KEY"),
+    temperature=0,
+)
+
+# -------------------------
+# Groq (Fallback)
+# -------------------------
+
+groq = ChatGroq(
+    model="llama-3.3-70b-versatile",
+    api_key=os.getenv("GROQ_API_KEY"),
     temperature=0,
 )
 
@@ -75,4 +91,30 @@ tools = [
 # Bind tools
 # -------------------------
 
-llm_with_tools = llm.bind_tools(tools)
+gemini_llm = gemini.bind_tools(tools)
+
+groq_llm = groq.bind_tools(tools)
+def invoke_llm(messages):
+    """
+    Try Gemini first.
+    If Gemini quota or API fails,
+    automatically switch to Groq.
+    """
+
+    try:
+        print("\nUsing Gemini...\n")
+        return gemini_llm.invoke(messages)
+
+    except ResourceExhausted:
+
+        print("\nGemini quota exceeded.")
+        print("Switching to Groq...\n")
+
+        return groq_llm.invoke(messages)
+
+    except Exception as e:
+
+        print(f"\nGemini Error: {e}")
+        print("Switching to Groq...\n")
+
+        return groq_llm.invoke(messages)
