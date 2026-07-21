@@ -2,8 +2,10 @@ import { motion } from 'framer-motion';
 import { CloudSun, Droplets, Eye, Gauge, Sunrise, Sunset, Thermometer } from 'lucide-react';
 import { WeatherCard } from '../components/features/WeatherCard';
 import { useEffect, useState } from 'react';
-import { getWeather } from '../api/weatherService';
+import { getWeather } from "../api/weatherService";
+import type { Weather } from "../api/weatherService";
 import { apiClient } from "../api/axios";
+
 
 
 function getUpdatedText(date: Date) {
@@ -28,7 +30,7 @@ function getUpdatedText(date: Date) {
 }
 
 export function LiveWeatherPage() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<Weather | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
@@ -82,6 +84,14 @@ useEffect(() => {
     return <div className="rounded-[32px] border border-rose-500/20 bg-rose-500/10 p-8 text-rose-300">{error}</div>;
   }
 
+  if (!data) {
+  return (
+    <div className="rounded-[32px] border border-slate-800/80 bg-slate-900/60 p-8 text-slate-400">
+      No weather data available.
+    </div>
+  );
+}
+
   return (
     <div className="space-y-6">
       <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-[32px] border border-slate-800/80 bg-slate-900/60 p-6 shadow-[0_0_120px_rgba(0,0,0,0.24)] backdrop-blur-xl">
@@ -106,6 +116,7 @@ useEffect(() => {
             <p className="mt-4 text-6xl font-semibold text-white">{data?.temperature}°</p>
             <p className="mt-3 text-slate-400">Feels like {data?.feelsLike}° with a light breeze over the city.</p>
           </div>
+          
           <div className="grid gap-4 md:grid-cols-2">
             <WeatherCard title="Humidity" value={data?.humidity} unit="%" icon="humidity" />
             <WeatherCard title="Wind" value={data?.windSpeed} unit="km/h" icon="wind" />

@@ -7,9 +7,36 @@ import { getAnalytics } from '../api/analyticsService';
 import { getWeather } from '../api/weatherService';
 import { apiClient } from "../api/axios";
 
+interface HourlyForecast {
+  time: string;
+  temp: number;
+  label: string;
+}
+
+interface Weather {
+  city: string;
+  temperature: number;
+  humidity: number;
+  windSpeed: number;
+  pressure: number;
+  feelsLike: number;
+  visibility: number;
+  clouds: number;
+  sunrise: string;
+  sunset: string;
+  description: string;
+  hourlyForecast: HourlyForecast[];
+}
+interface Analytics {
+  totalStations: number;
+  accuracy: number;
+  uptime: string;
+}
+
+
 export function DashboardPage() {
-  const [weather, setWeather] = useState<any>(null);
-  const [analytics, setAnalytics] = useState<any>(null);
+  const [weather, setWeather] = useState<Weather | null>(null);
+  const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(true);
   const [weatherError, setWeatherError] = useState<string | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
@@ -118,14 +145,18 @@ export function DashboardPage() {
             <div className="mt-6 text-slate-400">Loading live weather snapshot…</div>
           ) : weatherError ? (
             <div className="mt-6 rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-300">{weatherError}</div>
-          ) : (
+          ) : weather ? (
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               <WeatherCard title="Temperature" value={weather?.temperature} unit="°C" icon="temp" />
               <WeatherCard title="Humidity" value={weather?.humidity} unit="%" icon="humidity" />
               <WeatherCard title="Wind" value={weather?.windSpeed} unit="km/h" icon="wind" />
               <WeatherCard title="Pressure" value={weather?.pressure} unit="hPa" icon="pressure" />
             </div>
-          )}
+          ): (
+          <div className="mt-6 text-slate-400">
+            No weather data available.
+          </div>
+        )}
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-[32px] border border-slate-800/80 bg-slate-900/60 p-6 backdrop-blur-xl">

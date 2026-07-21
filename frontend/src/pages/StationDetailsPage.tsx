@@ -12,10 +12,31 @@ import {
 
 import { getStationDetails } from "../api/stationDetailService";
 
-export function StationDetailsPage() {
-  const { name } = useParams();
+interface NearbyStation {
+  name: string;
+  distance: string;
+}
 
-  const [station, setStation] = useState<any>(null);
+interface Station {
+  name: string;
+  region: string;
+  latitude: number;
+  longitude: number;
+  elevation: number;
+  forecastDays: number;
+  weather: {
+    temperature: number;
+    humidity: number;
+    wind: number;
+    rainProbability: number;
+  };
+  nearbyStations: NearbyStation[];
+}
+
+export function StationDetailsPage() {
+  const { name = "" } = useParams();
+
+  const [station, setStation] = useState<Station | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -88,7 +109,7 @@ export function StationDetailsPage() {
             <Thermometer className="mb-3 text-orange-400" size={28} />
             <p className="text-slate-400">Temperature</p>
             <h2 className="mt-2 text-3xl font-bold text-white">
-              {station.weather.temperature}°C
+              {station.weather?.temperature}°C
             </h2>
           </div>
 
@@ -96,7 +117,7 @@ export function StationDetailsPage() {
             <Droplets className="mb-3 text-cyan-400" size={28} />
             <p className="text-slate-400">Humidity</p>
             <h2 className="mt-2 text-3xl font-bold text-white">
-              {station.weather.humidity}%
+              {station.weather?.humidity}%
             </h2>
           </div>
 
@@ -104,7 +125,7 @@ export function StationDetailsPage() {
             <Wind className="mb-3 text-sky-400" size={28} />
             <p className="text-slate-400">Wind Speed</p>
             <h2 className="mt-2 text-3xl font-bold text-white">
-              {station.weather.wind} m/s
+              {station.weather?.wind} m/s
             </h2>
           </div>
 
@@ -112,7 +133,7 @@ export function StationDetailsPage() {
             <CloudRain className="mb-3 text-blue-400" size={28} />
             <p className="text-slate-400">Rain</p>
             <h2 className="mt-2 text-3xl font-bold text-white">
-              {station.weather.rainProbability}%
+              {station.weather?.rainProbability}%
             </h2>
           </div>
 
@@ -174,7 +195,7 @@ export function StationDetailsPage() {
 
           <div className="mt-6 space-y-4">
 
-            {station.nearbyStations.map((nearby: any) => (
+            {station.nearbyStations.map((nearby: NearbyStation) => (
 
               <div
                 key={nearby.name}

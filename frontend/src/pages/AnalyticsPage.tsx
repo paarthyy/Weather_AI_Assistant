@@ -5,8 +5,20 @@ import { getAnalytics } from '../api/analyticsService';
 
 const COLORS = ['#38bdf8', '#818cf8', '#34d399'];
 
+interface ChartPoint {
+  name: string;
+  value: number;
+}
+
+interface AnalyticsData {
+  temperatureTrend: ChartPoint[];
+  humidityTrend: ChartPoint[];
+  accuracy: ChartPoint[];
+  bias: ChartPoint[];
+}
+
 export function AnalyticsPage() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,7 +46,13 @@ export function AnalyticsPage() {
   if (error) {
     return <div className="rounded-[32px] border border-rose-500/20 bg-rose-500/10 p-8 text-rose-300">{error}</div>;
   }
-
+  if (!data) {
+  return (
+    <div className="rounded-[32px] border border-slate-800/80 bg-slate-900/60 p-8 text-slate-400">
+      No analytics available.
+    </div>
+  );
+}
   return (
     <div className="space-y-6">
       <div className="rounded-[32px] border border-slate-800/80 bg-slate-900/60 p-6 backdrop-blur-xl">

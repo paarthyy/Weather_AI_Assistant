@@ -5,8 +5,10 @@ export async function getStations() {
     const response = await apiClient.get('/stations');
     return response.data;
   } catch (error) {
-    throw new Error(getErrorMessage(error));
-  }
+  throw new Error(getErrorMessage(error), {
+    cause: error,
+  });
+}
 }
 
 export async function getStation(name: string) {
@@ -14,8 +16,10 @@ export async function getStation(name: string) {
     const response = await apiClient.get(`/station/${encodeURIComponent(name)}`);
     return response.data;
   } catch (error) {
-    throw new Error(getErrorMessage(error));
-  }
+  throw new Error(getErrorMessage(error), {
+    cause: error,
+  });
+}
 }
 
 export async function getForecast(params: Record<string, string | number> = {}) {
@@ -23,6 +27,8 @@ export async function getForecast(params: Record<string, string | number> = {}) 
     const response = await apiClient.get('/forecast', { params });
     return response.data;
   } catch (error) {
-    throw new Error(getErrorMessage(error));
-  }
+  throw new Error(getErrorMessage(error), {
+    cause: error,
+  });
+}
 }

@@ -3,9 +3,17 @@ import { Search, ArrowRight } from 'lucide-react';
 import { getStations } from '../api/stationService';
 import { useNavigate } from "react-router-dom";
 
+interface Station {
+  name: string;
+  region: string;
+  latitude: number;
+  longitude: number;
+  elevation: number;
+}
+
 export function StationExplorerPage() {
   const navigate = useNavigate();
-  const [stations, setStations] = useState<any[]>([]);
+  const [stations, setStations] = useState<Station[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
@@ -29,7 +37,7 @@ export function StationExplorerPage() {
 
   const filteredStations = useMemo(() => {
     if (!stations) return [];
-    return stations.filter((station: { name: string; region: string }) => station.name.toLowerCase().includes(query.toLowerCase()) || station.region.toLowerCase().includes(query.toLowerCase()));
+    return stations.filter((station) => station.name.toLowerCase().includes(query.toLowerCase()) || station.region.toLowerCase().includes(query.toLowerCase()));
   }, [stations, query]);
 
   return (
@@ -65,24 +73,39 @@ export function StationExplorerPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredStations.map((station: { id: string; name: string; latitude: number; longitude: number; elevation: number; temperature: number; forecastDays: number }) => (
-                  <tr key={station.id} className="border-b border-slate-800/70 text-slate-300">
-                    <td className="px-4 py-4 font-medium text-white">{station.name}</td>
-                    <td className="px-4 py-4">{station.latitude}</td>
-                    <td className="px-4 py-4">{station.longitude}</td>
-                    <td className="px-4 py-4">{station.elevation} m</td>
-                    <td className="px-4 py-4">
-                      <button 
-                      onClick={() =>
-                            navigate(`/station/${station.id}`)
+                {filteredStations.map((station) => (
+  <tr
+    key={station.name}
+    className="border-b border-slate-800/70 text-slate-300"
+  >
+    <td className="px-4 py-4 font-medium text-white">
+      {station.name}
+    </td>
 
-                            }
-                      className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-500/10 px-3 py-2 text-cyan-300">
-                        View Details <ArrowRight size={14} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+    <td className="px-4 py-4">
+      {station.latitude}
+    </td>
+
+    <td className="px-4 py-4">
+      {station.longitude}
+    </td>
+
+    <td className="px-4 py-4">
+      {station.elevation} m
+    </td>
+
+    <td className="px-4 py-4">
+      <button
+        onClick={() =>
+          navigate(`/station/${encodeURIComponent(station.name)}`)
+        }
+        className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-500/10 px-3 py-2 text-cyan-300"
+      >
+        View Details <ArrowRight size={14} />
+      </button>
+    </td>
+  </tr>
+))}
               </tbody>
             </table>
           </div>

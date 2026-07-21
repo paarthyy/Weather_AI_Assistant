@@ -3,12 +3,8 @@ import {
   Info,
   User,
   Cpu,
-  Database,
-  Globe,
   Sparkles,
   Code2,
-  BrainCircuit,
-  CloudSun,
   CheckCircle,
 } from "lucide-react";
 

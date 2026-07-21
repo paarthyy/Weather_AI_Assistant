@@ -3,33 +3,12 @@ import { motion } from 'framer-motion';
 import {
   SlidersHorizontal,
   Cpu,
-  Database,
   Bell,
   Save,
-  Info
 } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
 
-function InfoRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/70 px-5 py-4">
-      <span className="text-slate-400">{label}</span>
-
-      <span className="font-medium text-cyan-400">
-        {value}
-      </span>
-    </div>
-  );
-}
 
 export function SettingsPage() {
-  const { theme, setTheme } = useTheme();
   const [model, setModel] = useState(
   () => localStorage.getItem("weather_provider") || "Auto"
 );
@@ -38,7 +17,7 @@ const [notifications, setNotifications] = useState(
   () => localStorage.getItem("weather_notifications") === "true"
 );
 
-const [unit, setUnit] = useState(
+const [unit] = useState(
   () => localStorage.getItem("weather_unit") || "°C"
 );
   const saveSettings = () => {

@@ -22,6 +22,8 @@ export async function postChat(payload: { message: string }): Promise<ChatReply>
     };
 
   } catch (error) {
-    throw new Error(getErrorMessage(error));
-  }
+  throw new Error(getErrorMessage(error), {
+    cause: error,
+  });
+}
 }
