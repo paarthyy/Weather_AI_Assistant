@@ -5,15 +5,42 @@ import {
   Cpu,
   Database,
   Bell,
-  Save
+  Save,
+  Info
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 
+function InfoRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/70 px-5 py-4">
+      <span className="text-slate-400">{label}</span>
+
+      <span className="font-medium text-cyan-400">
+        {value}
+      </span>
+    </div>
+  );
+}
+
 export function SettingsPage() {
   const { theme, setTheme } = useTheme();
-  const [model, setModel] = useState('Gemini');
-  const [unit, setUnit] = useState('°C');
-  const [notifications, setNotifications] = useState(true);
+  const [model, setModel] = useState(
+  () => localStorage.getItem("weather_provider") || "Auto"
+);
+
+const [notifications, setNotifications] = useState(
+  () => localStorage.getItem("weather_notifications") === "true"
+);
+
+const [unit, setUnit] = useState(
+  () => localStorage.getItem("weather_unit") || "°C"
+);
   const saveSettings = () => {
 
   localStorage.setItem("weather_provider", model);
@@ -181,7 +208,94 @@ export function SettingsPage() {
 
             </div>
         </motion.div>
-      </div>
+            </div>
+
+      {/* About WeatherOps AI */}
+
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="rounded-[32px] border border-slate-800/80 bg-slate-900/60 p-8 backdrop-blur-xl"
+      >
+        <div className="flex items-center gap-2 text-cyan-300">
+          <Info size={18} />
+          <p className="text-sm font-medium">
+            About WeatherOps AI
+          </p>
+        </div>
+
+        <h3 className="mt-4 text-2xl font-semibold text-white">
+          WeatherOps AI
+        </h3>
+
+        <p className="mt-3 max-w-4xl text-slate-400 leading-7">
+          WeatherOps AI is an intelligent weather analytics platform
+          developed to combine modern AI with meteorological data.
+          It enables natural language interaction, real-time weather
+          insights, IMD dataset exploration, and AI-assisted forecast
+          analysis through an intuitive interface.
+        </p>
+
+        <div className="mt-8 grid gap-4 md:grid-cols-2">
+
+          <InfoRow
+            label="Application"
+            value="WeatherOps AI"
+          />
+
+          <InfoRow
+            label="Version"
+            value="1.0.0"
+          />
+
+          <InfoRow
+            label="Developer"
+            value="Paarth Sehgal"
+          />
+
+          <InfoRow
+            label="Backend"
+            value="FastAPI"
+          />
+
+          <InfoRow
+            label="Frontend"
+            value="React + TypeScript"
+          />
+
+          <InfoRow
+            label="AI Framework"
+            value="LangGraph"
+          />
+
+          <InfoRow
+            label="LLM Providers"
+            value="Gemini + Groq"
+          />
+
+          <InfoRow
+            label="Weather API"
+            value="OpenWeather API"
+          />
+
+          <InfoRow
+            label="Dataset"
+            value="IMD Forecast Archive"
+          />
+
+          <InfoRow
+            label="License"
+            value="Academic Research"
+          />
+
+        </div>
+
+        <div className="mt-8 border-t border-slate-800 pt-6 text-center text-sm text-slate-500">
+          © 2026 Paarth Sehgal • WeatherOps AI v1.0
+        </div>
+
+      </motion.div>
+
     </div>
   );
 }
