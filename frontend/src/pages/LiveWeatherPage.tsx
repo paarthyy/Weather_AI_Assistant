@@ -5,10 +5,34 @@ import { useEffect, useState } from 'react';
 import { getWeather } from '../api/weatherService';
 import { apiClient } from "../api/axios";
 
+
+function getUpdatedText(date: Date) {
+  const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+
+  if (diff < 60)
+    return "Updated just now";
+
+  const mins = Math.floor(diff / 60);
+
+  if (mins < 60)
+    return `Updated ${mins} min${mins > 1 ? "s" : ""} ago`;
+
+  const hours = Math.floor(mins / 60);
+
+  if (hours < 24)
+    return `Updated ${hours} hour${hours > 1 ? "s" : ""} ago`;
+
+  const days = Math.floor(hours / 24);
+
+  return `Updated ${days} day${days > 1 ? "s" : ""} ago`;
+}
+
 export function LiveWeatherPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [, forceUpdate] = useState(0);
 
   useEffect(() => {
   const load = async () => {
@@ -27,6 +51,7 @@ export function LiveWeatherPage() {
       });
 
       setData(weather);
+      setLastUpdated(new Date());
 
     } catch (err) {
       setError(
@@ -40,6 +65,13 @@ export function LiveWeatherPage() {
   };
 
   load();
+}, []);
+useEffect(() => {
+  const timer = setInterval(() => {
+    forceUpdate((v) => v + 1);
+  }, 60000);
+
+  return () => clearInterval(timer);
 }, []);
 
   if (loading) {
@@ -61,7 +93,7 @@ export function LiveWeatherPage() {
           <div className="rounded-2xl border border-cyan-400/20 bg-cyan-500/10 px-4 py-3 text-cyan-300">
             <div className="flex items-center gap-2">
               <CloudSun size={18} />
-              <span>Updated now</span>
+              <span>{getUpdatedText(lastUpdated)}</span>
             </div>
           </div>
         </div>

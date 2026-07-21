@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -13,7 +14,10 @@ from langchain_core.messages import HumanMessage
 
 try:
     from .graph import graph
-    from .imd.live_weather import current_weather
+    from .imd.live_weather import (
+    current_weather,
+    hourly_forecast,
+)
     from .imd.location import get_location
     from .imd.metadata import dataset_metadata
     from .imd.search_station import nearest_stations
@@ -128,8 +132,24 @@ def chat(request: ChatRequest):
 def weather(city: str = "Delhi") -> Dict[str, Any]:
     try:
         data = current_weather(city)
+        forecast = hourly_forecast(city)
         if not isinstance(data, dict):
             raise HTTPException(status_code=500, detail="Weather service returned invalid data")
+        sunrise = datetime.fromtimestamp(
+        data["sys"]["sunrise"]
+        ).strftime("%H:%M")
+        sunset = datetime.fromtimestamp(
+            data["sys"]["sunset"]
+        ).strftime("%H:%M")
+        hourly=[]
+        for item in forecast["list"][:4]:
+            hourly.append(
+                {
+                    "time": item["dt_txt"][11:16],
+                    "temp": round(item["main"]["temp"]),
+                    "label": item["weather"][0]["main"],
+                }
+            )
         return {
             "city": data.get("name", city),
             "temperature": round(data.get("main", {}).get("temp", 0), 1),
@@ -139,14 +159,9 @@ def weather(city: str = "Delhi") -> Dict[str, Any]:
             "feelsLike": round(data.get("main", {}).get("feels_like", 0), 1),
             "visibility": round((data.get("visibility", 0) or 0) / 1000, 1),
             "clouds": data.get("clouds", {}).get("all", 0),
-            "sunrise": "05:00",
-            "sunset": "19:00",
-            "hourlyForecast": [
-                {"time": "09:00", "temp": 29, "label": "Clear"},
-                {"time": "12:00", "temp": 31, "label": "Sunny"},
-                {"time": "15:00", "temp": 33, "label": "Warm"},
-                {"time": "18:00", "temp": 30, "label": "Cloudy"},
-            ],
+            "sunrise": sunrise,
+            "sunset": sunset,
+            "hourlyForecast": hourly,
         }
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc

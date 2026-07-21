@@ -29,3 +29,27 @@ def current_weather(city):
     print(data)
 
     return data
+def hourly_forecast(city):
+    if not API_KEY:
+        raise RuntimeError(
+            "OPENWEATHER_API_KEY is not configured."
+        )
+
+    url = "https://api.openweathermap.org/data/2.5/forecast"
+
+    params = {
+        "q": city,
+        "appid": API_KEY,
+        "units": "metric",
+    }
+
+    response = requests.get(
+        url,
+        params=params,
+    )
+
+    data = response.json()
+
+    print(data)
+
+    return data
