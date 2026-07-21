@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { BarChart3, Bot, Compass, LayoutDashboard, Map, Settings, Snowflake, Sparkles, RadioTower } from 'lucide-react';
+import { BarChart3, Bot, Compass, LayoutDashboard, Map, Settings, Snowflake, Sparkles, RadioTower, Info } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 const items = [
@@ -10,6 +10,11 @@ const items = [
   { label: 'Analytics', href: '/analytics', icon: BarChart3 },
   { label: 'Maps', href: '/map', icon: Map },
   { label: 'Settings', href: '/settings', icon: Settings },
+  {
+  label: "About",
+  href: "/about",
+  icon: Info,
+}
 ];
 
 export function Sidebar({ open }: { open: boolean }) {
@@ -18,7 +23,7 @@ export function Sidebar({ open }: { open: boolean }) {
       initial={false}
       animate={{ x: open ? 0 : -320 }}
       transition={{ type: 'spring', stiffness: 220, damping: 28 }}
-      className="fixed left-0 top-0 z-40 w-72 shrink-0 rounded-[32px] border border-slate-800/80 bg-slate-950/95 p-5 backdrop-blur-xl lg:static lg:h-[640px]"
+      className="fixed left-0 top-0 z-40 w-72 shrink-0 rounded-[32px] border border-slate-800/80 bg-slate-950/95 p-5 backdrop-blur-xl lg:static lg:h-[700px]"
     >
       <div className="flex items-center gap-3 rounded-2xl border border-cyan-500/20 bg-cyan-500/10 p-3">
         <div className="rounded-2xl border border-cyan-400/30 bg-cyan-500/20 p-2 text-cyan-300">

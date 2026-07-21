@@ -47,22 +47,20 @@ export function StationExplorerPage() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-[32px] border border-slate-800/80 bg-slate-900/60 backdrop-blur-xl">
+      <div className="h-[650px] overflow-hidden rounded-[32px] border border-slate-800/80 bg-slate-900/60 backdrop-blur-xl">
         {loading ? (
           <div className="p-6 text-slate-400">Loading stations…</div>
         ) : error ? (
           <div className="p-6 text-rose-300">{error}</div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="h-full overflow-y-auto overflow-x-auto">
             <table className="min-w-full text-left text-sm">
-              <thead className="border-b border-slate-800 bg-slate-950/70 text-slate-400">
+              <thead className="sticky top-0 z-10 border-b border-slate-800 bg-slate-950 text-slate-400">
                 <tr>
                   <th className="px-4 py-4">Station Name</th>
                   <th className="px-4 py-4">Latitude</th>
                   <th className="px-4 py-4">Longitude</th>
                   <th className="px-4 py-4">Elevation</th>
-                  <th className="px-4 py-4">Temperature</th>
-                  <th className="px-4 py-4">Forecast Days</th>
                   <th className="px-4 py-4">Action</th>
                 </tr>
               </thead>
@@ -73,8 +71,6 @@ export function StationExplorerPage() {
                     <td className="px-4 py-4">{station.latitude}</td>
                     <td className="px-4 py-4">{station.longitude}</td>
                     <td className="px-4 py-4">{station.elevation} m</td>
-                    <td className="px-4 py-4">{station.temperature}°C</td>
-                    <td className="px-4 py-4">{station.forecastDays}</td>
                     <td className="px-4 py-4">
                       <button 
                       onClick={() =>
