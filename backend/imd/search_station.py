@@ -1,41 +1,62 @@
+import math
+from pathlib import Path
+
 import pandas as pd
 
-import math
+# -----------------------------
+# Dataset Path
+# -----------------------------
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATA_DIR = BASE_DIR / "data"
 
 
-def nearest_stations(station):
+# -----------------------------
+# Find Nearest Stations
+# -----------------------------
 
-    df = pd.read_csv("data/stations.csv")
+def nearest_stations(station: str):
 
+    df = pd.read_csv(DATA_DIR / "stations.csv")
+
+    # Find selected station
     target = df[
-        df["Station"]
-        .str.lower()
-        ==
-        station.lower()
-    ].iloc[0]
+        df["Station"].str.lower() == station.lower()
+    ]
 
-    lat1 = target["Latitude"]
+    if target.empty:
+        raise ValueError(f"Station '{station}' not found.")
 
-    lon1 = target["Longitude"]
+    target = target.iloc[0]
 
-    rows=[]
+    lat1 = float(target["Latitude"])
+    lon1 = float(target["Longitude"])
 
-    for _,r in df.iterrows():
+    rows = []
 
-        d = math.sqrt(
+    for _, r in df.iterrows():
 
-            (lat1-r["Latitude"])**2 +
+        # Skip the selected station itself
+        if str(r["Station"]).lower() == station.lower():
+            continue
 
-            (lon1-r["Longitude"])**2
+        lat2 = float(r["Latitude"])
+        lon2 = float(r["Longitude"])
 
+        distance = math.sqrt(
+            (lat1 - lat2) ** 2 +
+            (lon1 - lon2) ** 2
         )
 
         rows.append(
-
-            (r["Station"],round(d,3))
-
+            (
+                str(r["Station"]),
+                round(distance, 3)
+            )
         )
 
-    rows.sort(key=lambda x:x[1])
+    # Sort by nearest distance
+    rows.sort(key=lambda x: x[1])
 
+    # Return nearest 5 stations
     return rows[:5]

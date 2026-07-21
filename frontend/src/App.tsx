@@ -11,6 +11,7 @@ import { MapPage } from './pages/MapPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { StationDetailsPage } from './pages/StationDetailsPage';
 
 function App() {
   return (
@@ -27,6 +28,10 @@ function App() {
               <Route path="/map" element={<MapPage />} />
               <Route path="/analytics" element={<AnalyticsPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route
+                path="/station/:name"
+                element={<StationDetailsPage />}
+              />
             </Route>
           </Route>
           <Route path="*" element={<NotFoundPage />} />

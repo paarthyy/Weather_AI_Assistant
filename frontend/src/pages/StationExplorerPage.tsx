@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Search, ArrowRight } from 'lucide-react';
 import { getStations } from '../api/stationService';
+import { useNavigate } from "react-router-dom";
 
 export function StationExplorerPage() {
+  const navigate = useNavigate();
   const [stations, setStations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -74,7 +76,12 @@ export function StationExplorerPage() {
                     <td className="px-4 py-4">{station.temperature}°C</td>
                     <td className="px-4 py-4">{station.forecastDays}</td>
                     <td className="px-4 py-4">
-                      <button className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-500/10 px-3 py-2 text-cyan-300">
+                      <button 
+                      onClick={() =>
+                            navigate(`/station/${station.id}`)
+
+                            }
+                      className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-500/10 px-3 py-2 text-cyan-300">
                         View Details <ArrowRight size={14} />
                       </button>
                     </td>

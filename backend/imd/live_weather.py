@@ -53,3 +53,40 @@ def hourly_forecast(city):
     print(data)
 
     return data
+
+def current_weather_coordinates(lat, lon):
+
+    if not API_KEY:
+        raise RuntimeError("API key missing")
+
+    url = (
+        "https://api.openweathermap.org/data/2.5/weather"
+        f"?lat={lat}&lon={lon}"
+        f"&appid={API_KEY}&units=metric"
+    )
+
+    response = requests.get(url)
+
+    response.raise_for_status()
+
+    return response.json()
+
+def hourly_forecast_coordinates(lat, lon):
+
+    if not API_KEY:
+        raise RuntimeError("API key missing")
+
+    url = "https://api.openweathermap.org/data/2.5/forecast"
+
+    params = {
+        "lat": lat,
+        "lon": lon,
+        "appid": API_KEY,
+        "units": "metric",
+    }
+
+    response = requests.get(url, params=params)
+
+    response.raise_for_status()
+
+    return response.json()

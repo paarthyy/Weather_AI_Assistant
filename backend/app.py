@@ -9,6 +9,7 @@ from pydantic import BaseModel
 import pandas as pd
 import requests
 import uvicorn
+import traceback
 
 from langchain_core.messages import HumanMessage
 
@@ -16,14 +17,20 @@ try:
     from .graph import graph
     from .imd.live_weather import (
     current_weather,
+    current_weather_coordinates,
     hourly_forecast,
+    hourly_forecast_coordinates,
 )
     from .imd.location import get_location
     from .imd.metadata import dataset_metadata
     from .imd.search_station import nearest_stations
 except ImportError:  # pragma: no cover - fallback for direct script execution
     from graph import graph
-    from imd.live_weather import current_weather
+    from .imd.live_weather import (
+    current_weather,
+    current_weather_coordinates,
+    hourly_forecast,
+)
     from imd.location import get_location
     from imd.metadata import dataset_metadata
     from imd.search_station import nearest_stations
@@ -288,3 +295,99 @@ def analytics() -> Dict[str, Any]:
 
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
+
+
+@app.get("/station-details/{name}")
+def station_details(name: str):
+
+    try:
+
+        path = DATA_DIR / "stations.csv"
+
+        df = pd.read_csv(path)
+
+        df["station_id"] = (
+        df["Station"]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+        .str.replace(" ", "-", regex=False)
+        )
+
+        row = df[df["station_id"] == name.lower()]
+
+        if row.empty:
+
+            raise HTTPException(
+                status_code=404,
+                detail="Station not found"
+            )
+
+        station = row.iloc[0]
+
+        weather = current_weather_coordinates(
+        station["Latitude"],
+        station["Longitude"],
+    )
+        forecast = hourly_forecast_coordinates(
+    station["Latitude"],
+    station["Longitude"],
+)
+
+        nearby = nearest_stations(
+            station["Station"]
+        )
+
+        return {
+
+            "name": station["Station"],
+
+            "latitude": float(station["Latitude"]),
+
+            "longitude": float(station["Longitude"]),
+
+            "elevation": float(station["Elevation"]),
+
+            "region": station.get("Region", "India"),
+
+            "forecastDays": 5,
+
+            "weather": {
+
+                "temperature":
+                    round(weather["main"]["temp"]),
+
+                "humidity":
+                    weather["main"]["humidity"],
+
+                "wind":
+                    weather["wind"]["speed"],
+
+                "pressure":
+                    weather["main"]["pressure"],
+
+                "rainProbability":
+    round(
+        forecast["list"][0]["pop"] * 100
+    )
+
+            },
+
+            "nearbyStations": [
+                {
+                    "name": s[0],
+                    "distance": s[1]
+                }
+
+                for s in nearby
+
+            ]
+        }
+
+    except Exception as e:
+        traceback.print_exc()   # <-- This prints the full error
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(e),
+        )
