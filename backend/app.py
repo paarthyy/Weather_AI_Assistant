@@ -44,10 +44,11 @@ app.add_middleware(
 
 class ChatRequest(BaseModel):
     message: str
-
+    provider: str = "Auto"
 
 class ChatResponse(BaseModel):
     response: str
+
 
 
 @app.get("/health")
@@ -61,8 +62,11 @@ def chat(request: ChatRequest):
     try:
 
         result = graph.invoke(
-            {"messages": [HumanMessage(content=request.message)]}
-        )
+    {
+        "messages": [HumanMessage(content=request.message)],
+        "provider": request.provider,
+    }
+)
 
         messages = result["messages"]
 

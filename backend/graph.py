@@ -10,8 +10,8 @@ if str(BACKEND_DIR) not in sys.path:
 
 try:
     from .state import AgentState
-    from .agent import llm_with_tools, tools
-except ImportError:  # pragma: no cover - fallback for direct script execution
+    from .agent import invoke_llm, tools
+except ImportError:
     from state import AgentState
     from agent import invoke_llm, tools
 
@@ -20,9 +20,15 @@ except ImportError:  # pragma: no cover - fallback for direct script execution
 # -------------------------------
 
 def chatbot(state: AgentState):
+
+    provider = state.get("provider", "Auto")
+
     return {
         "messages": [
-            invoke_llm(state["messages"])
+            invoke_llm(
+                state["messages"],
+                provider=provider,
+            )
         ]
     }
 

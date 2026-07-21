@@ -1,0 +1,62 @@
+.bg-app{
+
+    background:var(--background);
+}
+
+.bg-card{
+
+    background:var(--surface);
+}
+
+.bg-card-2{
+
+    background:var(--surface2);
+}
+
+.text-primary{
+
+    color:var(--text);
+}
+
+.text-secondary{
+
+    color:var(--text2);
+}
+
+.border-app{
+
+    border-color:var(--border);
+}
+
+.text-accent{
+
+    color:var(--primary);
+}
+
+.app-page {
+    @apply bg-slate-950 text-white;
+}
+
+.app-panel {
+    @apply bg-slate-900/60 border border-slate-800/80;
+}
+
+.app-card {
+    @apply bg-slate-950/70 border border-slate-800;
+}
+
+.app-heading {
+    @apply text-white;
+}
+
+.app-text {
+    @apply text-slate-300;
+}
+
+.app-muted {
+    @apply text-slate-400;
+}
+
+.app-border {
+    @apply border-slate-800;
+}
