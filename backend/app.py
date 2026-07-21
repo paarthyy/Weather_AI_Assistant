@@ -162,6 +162,7 @@ def weather(city: str = "Delhi") -> Dict[str, Any]:
             "sunrise": sunrise,
             "sunset": sunset,
             "hourlyForecast": hourly,
+            "description": data["weather"][0]["description"],
         }
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc

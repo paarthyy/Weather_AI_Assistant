@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Activity, ArrowUpRight, Cloud, RadioTower, Sparkles } from 'lucide-react';
+import { Activity, ArrowUpRight, Cloud, Cpu, Sparkles } from 'lucide-react';
 import { MetricCard } from '../components/features/MetricCard';
 import { WeatherCard } from '../components/features/WeatherCard';
 import { getAnalytics } from '../api/analyticsService';
@@ -69,17 +69,45 @@ export function DashboardPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <MetricCard label="Live Stations" value="24" />
-        <MetricCard label="Forecast Confidence" value="91%" accent="from-emerald-500 to-cyan-500" />
-        <MetricCard label="Active Models" value="Gemini + Qwen" accent="from-violet-500 to-fuchsia-500" />
+
+        <MetricCard
+          label="Backend Status"
+          value="ONLINE"
+          subtitle="FastAPI Connected"
+          accent="from-emerald-500 to-green-400"
+        />
+
+        <MetricCard
+          label="AI Provider"
+          value="Gemini"
+          subtitle="Fallback: Groq"
+          accent="from-cyan-500 to-blue-500"
+        />
+
+        <MetricCard
+          label="LLM Stack"
+          value="Gemini + Groq"
+          subtitle="Auto Failover Enabled"
+          accent="from-violet-500 to-fuchsia-500"
+        />
+
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-[32px] border border-slate-800/80 bg-slate-900/60 p-6 backdrop-blur-xl">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-400">Current weather</p>
-              <h3 className="mt-1 text-xl font-semibold text-white">{weather?.city} overview overview</h3>
+              <p className="text-sm text-slate-400">
+                Current Conditions
+            </p>
+
+            <h3 className="mt-1 text-xl font-semibold text-white">
+                {weather?.city} • India
+            </h3>
+
+            <p className="mt-1 text-sm text-cyan-300 capitalize">
+                {weather?.description}
+            </p>
             </div>
             <div className="rounded-2xl border border-cyan-400/20 bg-cyan-500/10 p-3 text-cyan-300">
               <Cloud size={18} />
@@ -95,7 +123,7 @@ export function DashboardPage() {
               <WeatherCard title="Temperature" value={weather?.temperature} unit="°C" icon="temp" />
               <WeatherCard title="Humidity" value={weather?.humidity} unit="%" icon="humidity" />
               <WeatherCard title="Wind" value={weather?.windSpeed} unit="km/h" icon="wind" />
-              <WeatherCard title="Pressure" value={weather?.pressure} unit="hPa" />
+              <WeatherCard title="Pressure" value={weather?.pressure} unit="hPa" icon="pressure" />
             </div>
           )}
         </motion.div>
@@ -103,11 +131,16 @@ export function DashboardPage() {
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-[32px] border border-slate-800/80 bg-slate-900/60 p-6 backdrop-blur-xl">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-400">Forecast health</p>
-              <h3 className="mt-1 text-xl font-semibold text-white">Analytics pulse</h3>
+              <p className="text-sm text-slate-400">
+                  AI Operations
+              </p>
+
+              <h3 className="mt-1 text-xl font-semibold text-white">
+                  AI System Status
+              </h3>
             </div>
             <div className="rounded-2xl border border-violet-500/20 bg-violet-500/10 p-3 text-violet-300">
-              <RadioTower size={18} />
+              <Cpu size={18} />
             </div>
           </div>
 
@@ -117,16 +150,46 @@ export function DashboardPage() {
             <div className="mt-6 space-y-3">
               {analytics ? (
                 <>
-                  <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 text-slate-300">
-                    Forecast accuracy: <span className="font-semibold text-white">92%</span>
-                  </div>
-                  <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 text-slate-300">
-                    Bias trend: <span className="font-semibold text-white">+1.2°C</span>
-                  </div>
-                  <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 text-slate-300">
-                    Confidence: <span className="font-semibold text-white">High</span>
-                  </div>
-                </>
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 flex items-center justify-between">
+                <span className="text-slate-300">
+                  LangGraph Agent
+                </span>
+
+                <span className="text-emerald-400 font-semibold">
+                  Running
+                </span>
+              </div>
+
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 flex items-center justify-between">
+                <span className="text-slate-300">
+                  Weather API
+                </span>
+
+                <span className="text-emerald-400 font-semibold">
+                  Connected
+                </span>
+              </div>
+
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 flex items-center justify-between">
+                <span className="text-slate-300">
+                  Location Service
+                </span>
+
+                <span className="text-emerald-400 font-semibold">
+                  Online
+                </span>
+              </div>
+
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 flex items-center justify-between">
+                <span className="text-slate-300">
+                  IMD Dataset
+                </span>
+
+                <span className="text-emerald-400 font-semibold">
+                  Loaded
+                </span>
+              </div>
+            </>
               ) : null}
             </div>
           )}
