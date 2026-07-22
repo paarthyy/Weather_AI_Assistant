@@ -13,6 +13,9 @@ import { SettingsPage } from './pages/SettingsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { StationDetailsPage } from './pages/StationDetailsPage';
 import { AboutPage } from "./pages/AboutPage";
+import { LoginPage } from "./pages/LoginPage";
+import { SignupPage } from "./pages/SignupPage";
+import { ProfilePage } from "./pages/ProfilePage";
 
 function App() {
   return (
@@ -20,6 +23,8 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
           <Route element={<ProtectedLayout />}>
             <Route element={<DashboardLayout />}>
               <Route path="/dashboard" element={<DashboardPage />} />
@@ -30,6 +35,7 @@ function App() {
               <Route path="/analytics" element={<AnalyticsPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/about" element={<AboutPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
               <Route
                 path="/station/:name"
                 element={<StationDetailsPage />}

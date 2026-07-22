@@ -3,9 +3,14 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
 
+from .database import client, MONGODB_URI
+from .database import users
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from .auth.schemas import SignupRequest, LoginRequest
+from .auth.auth import signup, login
+
 import pandas as pd
 import requests
 import uvicorn
@@ -391,3 +396,67 @@ def station_details(name: str):
             status_code=500,
             detail=str(e),
         )
+@app.get("/db-test")
+async def db_test():
+    try:
+        await client.admin.command("ping")
+        return {
+            "status": "success",
+            "message": "MongoDB Connected Successfully!"
+        }
+
+    except Exception as e:
+        return {
+            "status": "failed",
+            "error": str(e)
+        }
+
+@app.post("/signup")
+async def signup_api(user: SignupRequest):
+    return await signup(user)
+
+
+@app.post("/login")
+async def login_api(user: LoginRequest):
+    return await login(user)
+
+from backend.database import users
+
+@app.get("/users")
+async def get_users():
+    all_users = []
+
+    async for user in users.find():
+        user["_id"] = str(user["_id"])
+        all_users.append(user)
+
+    return all_users
+
+from backend.database import db
+
+@app.get("/db-name")
+async def db_name():
+    return {
+        "database": db.name,
+        "collections": await db.list_collection_names()
+    }
+
+from backend.database import client
+
+@app.get("/mongo-info")
+async def mongo_info():
+    return await client.list_database_names()
+
+from backend.database import client
+# or
+# from .database import client
+
+@app.get("/mongo-info")
+async def mongo_info():
+    databases = await client.list_database_names()
+    return {
+        "databases": databases
+    }
+@app.get("/mongo-uri")
+async def mongo_uri():
+    return {"uri": MONGODB_URI}
