@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Menu, Moon, Sun, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import UserMenu from "./UserMenu";
 
 interface NavbarProps {
   onMenuToggle: () => void;
@@ -40,6 +41,7 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
           >
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
           </motion.button>
+          <UserMenu />
         </div>
       </div>
     </header>

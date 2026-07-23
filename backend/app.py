@@ -3,9 +3,25 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
 
+from .database import client, MONGODB_URI
+from .database import users
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from .auth.schemas import SignupRequest, LoginRequest
+from .auth.auth import signup, login
+from backend.auth.change_password_schema import ChangePasswordRequest
+from fastapi import Depends
+from backend.auth.dependencies import get_current_user
+from backend.auth.utils import hash_password, verify_password
+from backend.auth.change_password_schema import ChangePasswordRequest
+from backend.auth.delete_account_schema import DeleteAccountRequest
+from .auth.auth import (
+    signup,
+    login,
+    delete_account
+)
+
 import pandas as pd
 import requests
 import uvicorn
@@ -140,7 +156,10 @@ def chat(request: ChatRequest):
 
 
 @app.get("/weather")
-def weather(city: str = "Delhi") -> Dict[str, Any]:
+def weather(
+    city: str = "Delhi",
+    current_user=Depends(get_current_user)
+):
     try:
         data = current_weather(city)
         forecast = hourly_forecast(city)
@@ -180,7 +199,10 @@ def weather(city: str = "Delhi") -> Dict[str, Any]:
 
 
 @app.get("/location")
-def location(query: str | None = None) -> Dict[str, Any]:
+def location(
+    query: str | None = None,
+    current_user=Depends(get_current_user)
+):
     try:
         if query:
             return {"query": query, "coordinates": [28.6139, 77.209]}
@@ -194,7 +216,9 @@ def location(query: str | None = None) -> Dict[str, Any]:
 
 
 @app.get("/stations")
-def stations() -> List[Dict[str, Any]]:
+def stations(
+    current_user=Depends(get_current_user)
+):
     try:
         path = DATA_DIR / "stations.csv"
         df = pd.read_csv(path)
@@ -262,7 +286,9 @@ def metadata() -> Dict[str, Any]:
 
 
 @app.get("/analytics")
-def analytics() -> Dict[str, Any]:
+def analytics(
+    current_user=Depends(get_current_user)
+):
     try:
         return {
             "temperatureTrend": [
@@ -391,3 +417,139 @@ def station_details(name: str):
             status_code=500,
             detail=str(e),
         )
+@app.get("/db-test")
+async def db_test():
+    try:
+        await client.admin.command("ping")
+        return {
+            "status": "success",
+            "message": "MongoDB Connected Successfully!"
+        }
+
+    except Exception as e:
+        return {
+            "status": "failed",
+            "error": str(e)
+        }
+
+@app.post("/signup")
+async def signup_api(user: SignupRequest):
+    return await signup(user)
+
+
+@app.post("/login")
+async def login_api(user: LoginRequest):
+    return await login(user)
+
+from backend.database import users
+
+@app.get("/users")
+async def get_users():
+    all_users = []
+
+    async for user in users.find():
+        user["_id"] = str(user["_id"])
+        all_users.append(user)
+
+    return all_users
+
+from backend.database import db
+
+@app.get("/db-name")
+async def db_name():
+    return {
+        "database": db.name,
+        "collections": await db.list_collection_names()
+    }
+
+from backend.database import client
+
+@app.get("/mongo-info")
+async def mongo_info():
+    return await client.list_database_names()
+
+from backend.database import client
+# or
+# from .database import client
+
+@app.get("/mongo-info")
+async def mongo_info():
+    databases = await client.list_database_names()
+    return {
+        "databases": databases
+    }
+@app.get("/mongo-uri")
+async def mongo_uri():
+    return {"uri": MONGODB_URI}
+
+@app.post("/change-password")
+async def change_password_api(
+    request: ChangePasswordRequest,
+    current_user=Depends(get_current_user)
+):
+    return await change_password(request, current_user)
+
+@app.get("/me")
+async def me(
+    current_user=Depends(get_current_user)
+):
+
+    user = await users.find_one(
+        {
+            "email": current_user["email"]
+        }
+    )
+
+    if not user:
+
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    return {
+
+        "name": user["name"],
+
+        "email": user["email"]
+
+    }
+
+async def change_password(request, current_user):
+
+    db_user = await users.find_one(
+        {"email": current_user["email"]}
+    )
+
+    if not verify_password(
+        request.current_password,
+        db_user["password"]
+    ):
+        return {
+            "success": False,
+            "message": "Current password is incorrect."
+        }
+
+    await users.update_one(
+        {"email": current_user["email"]},
+        {
+            "$set": {
+                "password": hash_password(request.new_password)
+            }
+        }
+    )
+
+    return {
+        "success": True,
+        "message": "Password changed successfully."
+    }
+
+@app.post("/delete-account")
+async def delete_account_api(
+    request: DeleteAccountRequest,
+    current_user=Depends(get_current_user)
+):
+    return await delete_account(
+        request,
+        current_user
+    )

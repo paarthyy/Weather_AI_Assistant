@@ -1,4 +1,4 @@
-import { apiClient } from './axios';
+import { apiClient } from './client';
 
 export async function postChat(payload: Record<string, unknown>) {
   try {
