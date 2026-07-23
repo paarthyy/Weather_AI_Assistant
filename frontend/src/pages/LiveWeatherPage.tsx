@@ -4,7 +4,7 @@ import { WeatherCard } from '../components/features/WeatherCard';
 import { useEffect, useState } from 'react';
 import { getWeather } from "../api/weatherService";
 import type { Weather } from "../api/weatherService";
-import { apiClient } from "../api/axios";
+import { apiClient } from "../api/client";
 
 
 

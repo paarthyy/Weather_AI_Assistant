@@ -1,6 +1,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import {
   Mail,
   Lock,
@@ -13,7 +14,7 @@ import AuthLayout from "../components/auth/AuthLayout";
 import AuthCard from "../components/auth/AuthCard";
 
 import { login as loginAPI } from "../auth/authService";
-import { useAuth } from "../auth/AuthContext";
+import { useAuth } from "../auth/useAuth";
 
 export function LoginPage() {
 
@@ -46,28 +47,37 @@ export function LoginPage() {
         return;
     }
 
-      login({
-            name: res.name,
-            email: res.email,
-            });
+      login(res.user);
 
-            toast.success(`Welcome back, ${res.name}!`);
+      localStorage.setItem(
+          "token",
+          res.token
+      );
+
+      toast.success(`Welcome back, ${res.user.name}!`);
 
             navigate("/dashboard");
 
-    } catch (error: any) {
+    } catch (error) {
+
+    if (axios.isAxiosError(error)) {
 
         toast.error(
-            error?.response?.data?.detail ||
+            error.response?.data?.detail ??
             "Invalid Email or Password"
         );
 
-        } finally {
+    } else {
 
-      setLoading(false);
+        toast.error("Something went wrong.");
 
     }
 
+} finally {
+
+    setLoading(false);
+
+}
   };
 
   return (
@@ -236,5 +246,4 @@ export function LoginPage() {
     </AuthLayout>
 
   );
-
 }

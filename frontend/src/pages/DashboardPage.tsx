@@ -5,7 +5,8 @@ import { MetricCard } from '../components/features/MetricCard';
 import { WeatherCard } from '../components/features/WeatherCard';
 import { getAnalytics } from '../api/analyticsService';
 import { getWeather } from '../api/weatherService';
-import { apiClient } from "../api/axios";
+import { apiClient } from "../api/client";
+import { Link } from "react-router-dom";
 
 interface HourlyForecast {
   time: string;
@@ -233,9 +234,13 @@ export function DashboardPage() {
             <p className="text-sm text-slate-400">Quick route</p>
             <h3 className="mt-1 text-xl font-semibold text-white">Jump into the AI workspace</h3>
           </div>
-          <a href="/chat" className="inline-flex items-center gap-2 text-sm text-cyan-300">
-            Open chat <ArrowUpRight size={16} />
-          </a>
+          <Link
+  to="/chat"
+  className="inline-flex items-center gap-2 text-sm font-medium text-cyan-300 transition hover:text-cyan-200"
+>
+  Open chat
+  <ArrowUpRight size={16} />
+</Link>
         </div>
       </div>
     </div>

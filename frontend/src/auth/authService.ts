@@ -1,8 +1,6 @@
-import axios from "axios";
+import { apiClient } from "../api/client";
 
-const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-});
+
 
 export interface LoginData {
   email: string;
@@ -16,11 +14,38 @@ export interface SignupData {
 }
 
 export const signup = async (data: SignupData) => {
-  const response = await API.post("/signup", data);
+  const response = await apiClient.post("/signup", data);
   return response.data;
 };
 
 export const login = async (data: LoginData) => {
-  const response = await API.post("/login", data);
+  const response = await apiClient.post("/login", data);
   return response.data;
+};
+
+export const changePassword = async (data: {
+  current_password: string;
+  new_password: string;
+}) => {
+  const response = await apiClient.post("/change-password", data);
+  return response.data;
+};
+export const getCurrentUser = async () => {
+
+    const response = await apiClient.get("/me");
+
+    return response.data;
+
+};
+export const deleteAccount = async (password: string) => {
+
+    const response = await apiClient.post(
+        "/delete-account",
+        {
+            password,
+        }
+    );
+
+    return response.data;
+
 };

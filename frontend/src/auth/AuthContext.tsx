@@ -1,9 +1,11 @@
 import {
   createContext,
-  useContext,
   useEffect,
   useState,
+  type ReactNode,
 } from "react";
+
+import { getCurrentUser } from "./authService";
 
 interface User {
   name: string;
@@ -14,39 +16,76 @@ interface AuthContextType {
   user: User | null;
   login: (user: User) => void;
   logout: () => void;
+  loading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType>(null!);
+export const AuthContext =
+  createContext<AuthContextType>(null!);
 
 export const AuthProvider = ({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) => {
 
   const [user, setUser] = useState<User | null>(null);
 
+  const [loading, setLoading] = useState<boolean>(true);
+
   useEffect(() => {
 
-    const storedUser = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
 
-    if (storedUser) {
+    if (!token) {
+  setTimeout(() => {
+    setLoading(false);
+  }, 0);
+  return;
+}
 
-      setUser(JSON.parse(storedUser));
+    getCurrentUser()
 
-    }
+      .then((data) => {
+
+        setUser(data);
+
+        localStorage.setItem(
+          "user",
+          JSON.stringify(data)
+        );
+
+      })
+
+      .catch(() => {
+
+        localStorage.removeItem("token");
+
+        localStorage.removeItem("user");
+
+      })
+
+      .finally(() => {
+
+        setLoading(false);
+
+      });
 
   }, []);
 
   const login = (user: User) => {
 
-    localStorage.setItem("user", JSON.stringify(user));
-
     setUser(user);
+
+    localStorage.setItem(
+      "user",
+      JSON.stringify(user)
+    );
 
   };
 
   const logout = () => {
+
+    localStorage.removeItem("token");
 
     localStorage.removeItem("user");
 
@@ -61,6 +100,7 @@ export const AuthProvider = ({
         user,
         login,
         logout,
+        loading,
       }}
     >
 
@@ -71,5 +111,3 @@ export const AuthProvider = ({
   );
 
 };
-
-export const useAuth = () => useContext(AuthContext);

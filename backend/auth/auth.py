@@ -2,6 +2,10 @@ from .utils import hash_password, verify_password
 from .schemas import SignupRequest, LoginRequest
 from ..database import users
 from fastapi import HTTPException
+from .utils import hash_password, verify_password
+from .jwt_handler import create_access_token
+from ..database import users
+
 
 
 async def signup(user: SignupRequest):
@@ -51,9 +55,59 @@ async def login(user: LoginRequest):
             detail="Invalid email or password"
         )
 
+    token = create_access_token(
+    {
+        "email": db_user["email"]
+    }
+)
+
+    return {
+
+    "success": True,
+
+    "message": "Login Successful",
+
+    "token": token,
+
+    "user": {
+
+        "name": db_user["name"],
+
+        "email": db_user["email"]
+
+    }
+
+}
+async def delete_account(request, current_user):
+
+    user = await users.find_one(
+        {
+            "email": current_user["email"]
+        }
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    if not verify_password(
+        request.password,
+        user["password"]
+    ):
+        return {
+            "success": False,
+            "message": "Incorrect password."
+        }
+
+    await users.delete_one(
+        {
+            "email": current_user["email"]
+        }
+    )
+
     return {
         "success": True,
-        "message": "Login Successful",
-        "name": db_user["name"],
-        "email": db_user["email"]
+        "message": "Account deleted successfully."
     }

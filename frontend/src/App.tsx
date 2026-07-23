@@ -16,6 +16,7 @@ import { AboutPage } from "./pages/AboutPage";
 import { LoginPage } from "./pages/LoginPage";
 import { SignupPage } from "./pages/SignupPage";
 import { ProfilePage } from "./pages/ProfilePage";
+import { ChangePasswordPage } from "./pages/ChangePasswordPage";
 
 function App() {
   return (
@@ -36,6 +37,10 @@ function App() {
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route
+    path="/change-password"
+    element={<ChangePasswordPage />}
+/>
               <Route
                 path="/station/:name"
                 element={<StationDetailsPage />}
