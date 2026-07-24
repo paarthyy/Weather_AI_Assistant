@@ -4,7 +4,6 @@ import { WeatherCard } from '../components/features/WeatherCard';
 import { useEffect, useState } from 'react';
 import { getWeather } from "../api/weatherService";
 import type { Weather } from "../api/weatherService";
-import { apiClient } from "../api/client";
 
 
 
@@ -37,36 +36,63 @@ export function LiveWeatherPage() {
   const [, forceUpdate] = useState(0);
 
   useEffect(() => {
-  const load = async () => {
-    try {
-      setLoading(true);
-      setError(null);
 
-      // Step 1: Get user's location
-      const locationRes = await apiClient.get("/location");
+    const load = () => {
 
-      const city = locationRes.data.query;
+        navigator.geolocation.getCurrentPosition(
 
-      // Step 2: Get weather for that city
-      const weather = await getWeather({
-        city,
-      });
+            async (position) => {
 
-      setData(weather);
-      setLastUpdated(new Date());
+                try {
 
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to load weather data."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+                    setLoading(true);
+                    setError(null);
 
-  load();
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+
+                    const weather = await getWeather({
+
+                        lat,
+                        lon,
+
+                    });
+
+                    setData(weather);
+                    setLastUpdated(new Date());
+
+                } catch (err) {
+
+                    setError(
+                        err instanceof Error
+                            ? err.message
+                            : "Unable to load weather data."
+                    );
+
+                } finally {
+
+                    setLoading(false);
+
+                }
+
+            },
+
+            () => {
+
+                setError(
+                    "Please allow location permission to view live weather."
+                );
+
+                setLoading(false);
+
+            }
+
+        );
+
+    };
+
+    load();
+
 }, []);
 useEffect(() => {
   const timer = setInterval(() => {

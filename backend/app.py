@@ -46,6 +46,7 @@ except ImportError:  # pragma: no cover - fallback for direct script execution
     current_weather,
     current_weather_coordinates,
     hourly_forecast,
+    hourly_forecast_coordinates,
 )
     from imd.location import get_location
     from imd.metadata import dataset_metadata
@@ -157,12 +158,13 @@ def chat(request: ChatRequest):
 
 @app.get("/weather")
 def weather(
-    city: str = "Delhi",
+    lat: float,
+    lon: float,
     current_user=Depends(get_current_user)
 ):
     try:
-        data = current_weather(city)
-        forecast = hourly_forecast(city)
+        data = current_weather_coordinates(lat, lon)
+        forecast = hourly_forecast_coordinates(lat, lon)
         if not isinstance(data, dict):
             raise HTTPException(status_code=500, detail="Weather service returned invalid data")
         sunrise = datetime.fromtimestamp(
@@ -181,7 +183,8 @@ def weather(
                 }
             )
         return {
-            "city": data.get("name", city),
+            "city": data.get("name", "Unknown"),
+            "country": data.get("sys", {}).get("country", ""),
             "temperature": round(data.get("main", {}).get("temp", 0), 1),
             "humidity": data.get("main", {}).get("humidity", 0),
             "windSpeed": data.get("wind", {}).get("speed", 0),

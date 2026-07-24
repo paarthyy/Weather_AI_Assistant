@@ -1,4 +1,4 @@
-import { apiClient, getErrorMessage } from "./client";
+import { apiClient } from "./client";
 
 export interface HourlyForecast {
   time: string;
@@ -8,6 +8,7 @@ export interface HourlyForecast {
 
 export interface Weather {
   city: string;
+  country: string;
   temperature: number;
   humidity: number;
   windSpeed: number;
@@ -21,18 +22,23 @@ export interface Weather {
   hourlyForecast: HourlyForecast[];
 }
 
-export async function getWeather(
-  params: Record<string, string | number> = {}
-): Promise<Weather> {
-  try {
-    const response = await apiClient.get<Weather>("/weather", {
-      params,
+export async function getWeather({
+    lat,
+    lon,
+}: {
+    lat: number;
+    lon: number;
+}) {
+
+    const response = await apiClient.get("/weather", {
+
+        params: {
+            lat,
+            lon,
+        },
+
     });
 
     return response.data;
-  } catch (error) {
-  throw new Error(getErrorMessage(error), {
-    cause: error,
-  });
-}
+
 }

@@ -5,7 +5,6 @@ import { MetricCard } from '../components/features/MetricCard';
 import { WeatherCard } from '../components/features/WeatherCard';
 import { getAnalytics } from '../api/analyticsService';
 import { getWeather } from '../api/weatherService';
-import { apiClient } from "../api/client";
 import { Link } from "react-router-dom";
 
 interface HourlyForecast {
@@ -43,38 +42,70 @@ export function DashboardPage() {
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
 
   useEffect(() => {
-  const load = async () => {
-    try {
-      setWeatherLoading(true);
-      setAnalyticsLoading(true);
 
-      // Get current location
-      const locationRes = await apiClient.get("/location");
-      const city = locationRes.data.query;
+    const load = () => {
 
-      // Load weather + analytics together
-      const [weatherResponse, analyticsResponse] = await Promise.all([
-        getWeather({ city }),
-        getAnalytics(),
-      ]);
+        navigator.geolocation.getCurrentPosition(
 
-      setWeather(weatherResponse);
-      setAnalytics(analyticsResponse);
-    } catch (err) {
-      setWeatherError(
-        err instanceof Error
-          ? err.message
-          : "Unable to load dashboard data."
-      );
-    } finally {
-      setWeatherLoading(false);
-      setAnalyticsLoading(false);
-    }
-  };
+            async (position) => {
 
-  void load();
+                try {
+
+                    setWeatherLoading(true);
+                    setAnalyticsLoading(true);
+
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+
+                    const [weatherResponse, analyticsResponse] =
+                        await Promise.all([
+
+                            getWeather({
+                                lat,
+                                lon,
+                            }),
+
+                            getAnalytics(),
+
+                        ]);
+
+                    setWeather(weatherResponse);
+                    setAnalytics(analyticsResponse);
+
+                } catch (err) {
+
+                    setWeatherError(
+                        err instanceof Error
+                            ? err.message
+                            : "Unable to load dashboard."
+                    );
+
+                } finally {
+
+                    setWeatherLoading(false);
+                    setAnalyticsLoading(false);
+
+                }
+
+            },
+
+            () => {
+
+                setWeatherError(
+                    "Please allow location permission."
+                );
+
+                setWeatherLoading(false);
+
+            }
+
+        );
+
+    };
+
+    load();
+
 }, []);
-
   return (
     <div className="space-y-6">
       <div className="rounded-[32px] border border-slate-800/80 bg-slate-900/60 p-6 shadow-[0_0_120px_rgba(0,0,0,0.25)] backdrop-blur-xl">
@@ -130,7 +161,7 @@ export function DashboardPage() {
             </p>
 
             <h3 className="mt-1 text-xl font-semibold text-white">
-                {weather?.city} • India
+                {weather?.city} • {weather?.country}
             </h3>
 
             <p className="mt-1 text-sm text-cyan-300 capitalize">
