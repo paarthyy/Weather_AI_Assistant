@@ -15,6 +15,7 @@ interface HourlyForecast {
 
 interface Weather {
   city: string;
+  country: string;
   temperature: number;
   humidity: number;
   windSpeed: number;
