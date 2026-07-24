@@ -2,11 +2,16 @@ import os
 from pathlib import Path
 
 import pandas as pd
+from data.aqi import get_air_quality
 
 import matplotlib
 matplotlib.use("Agg")
-
+from imd.weather_alerts import get_weather_alerts
+from imd.advisory import generate_advisory
 import matplotlib.pyplot as plt
+from imd.live_weather import (
+    current_weather_coordinates,
+)
 
 from langchain_core.tools import tool
 
@@ -483,3 +488,106 @@ ISP: {loc['isp']}
 
     except Exception as e:
         return str(e)
+
+from langchain_core.tools import tool
+
+@tool
+def air_quality_tool(
+    lat: float,
+    lon: float,
+) -> str:
+    """
+    Get Air Quality Index.
+
+    Use whenever the user asks:
+
+    - Air quality
+    - AQI
+    - Pollution
+    - PM2.5
+    - PM10
+    """
+
+    data = get_air_quality(lat, lon)
+
+    aqi = data["list"][0]["main"]["aqi"]
+
+    components = data["list"][0]["components"]
+
+    levels = {
+        1: "Good",
+        2: "Fair",
+        3: "Moderate",
+        4: "Poor",
+        5: "Very Poor",
+    }
+
+    return f"""
+Air Quality Report
+
+AQI
+---
+{aqi} ({levels.get(aqi)})
+
+PM2.5 : {components["pm2_5"]}
+
+PM10 : {components["pm10"]}
+
+CO : {components["co"]}
+
+NO2 : {components["no2"]}
+
+SO2 : {components["so2"]}
+"""
+@tool
+def weather_alert_tool(
+    lat: float,
+    lon: float,
+) -> str:
+    """
+    Check weather alerts.
+
+    Use whenever user asks:
+
+    - weather alert
+    - severe weather
+    - flood
+    - rain warning
+    - storm warning
+    - should I carry umbrella
+    - heavy rain
+    - dangerous weather
+    """
+
+    return get_weather_alerts(lat, lon)
+
+@tool
+def weather_advisory_tool(
+    lat: float,
+    lon: float
+)->str:
+    """
+    Give practical weather advice.
+
+    Use whenever user asks
+
+    - Should I go outside
+    - What should I wear
+    - Should I carry umbrella
+    - Weather advice
+    - Outdoor advice
+    - Picnic
+    - Travel advice
+    """
+
+    weather = current_weather_coordinates(lat, lon)
+
+    alerts = get_weather_alerts(lat, lon)
+
+    aqi = get_air_quality(lat, lon)
+
+    return generate_advisory(
+        weather,
+        alerts,
+        aqi["list"][0]["main"]["aqi"]
+    )

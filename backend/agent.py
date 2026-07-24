@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from langchain_core.messages import SystemMessage
 
 BACKEND_DIR = Path(__file__).resolve().parent
 if str(BACKEND_DIR) not in sys.path:
@@ -27,6 +28,9 @@ try:
         search_nearby_stations,
         get_live_weather,
         get_my_location,
+        air_quality_tool,
+        weather_alert_tool,
+        weather_advisory_tool,
     )
 except ImportError:  # pragma: no cover - fallback for direct script execution
     from tools import (
@@ -42,6 +46,9 @@ except ImportError:  # pragma: no cover - fallback for direct script execution
         search_nearby_stations,
         get_live_weather,
         get_my_location,
+        air_quality_tool,
+        weather_alert_tool,
+        weather_advisory_tool,
     )
 
 # -------------------------
@@ -85,6 +92,9 @@ tools = [
     search_nearby_stations,
     get_live_weather,
     get_my_location,
+    air_quality_tool,
+    weather_alert_tool,
+    weather_advisory_tool,
 ]
 
 # -------------------------
@@ -100,23 +110,42 @@ groq_llm = groq.bind_tools(tools)
 # ---------------------------------
 USE_GROQ_ONLY = False
 
-def invoke_llm(messages, provider="Auto"):
+def invoke_llm(messages, provider="Auto", lat=None, lon=None):
 
     global USE_GROQ_ONLY
+    messages_to_send = messages
+
+    if lat is not None and lon is not None:
+        messages_to_send = [
+            SystemMessage(
+                content=f"""
+    The user's current location is already known.
+
+    Latitude: {lat}
+    Longitude: {lon}
+
+    Do NOT call the get_my_location tool when answering weather,
+    AQI, weather alert or advisory questions.
+
+    Always use these coordinates whenever a tool requires a location.
+    """
+            ),
+            *messages,
+        ]
 
     # -------------------------
     # Force Gemini
     # -------------------------
     if provider == "Gemini":
         print("\nUsing Gemini (Forced)...\n")
-        return gemini_llm.invoke(messages)
+        return gemini_llm.invoke(messages_to_send)
 
     # -------------------------
     # Force Groq
     # -------------------------
     if provider == "Groq":
         print("\nUsing Groq (Forced)...\n")
-        return groq_llm.invoke(messages)
+        return groq_llm.invoke(messages_to_send)
 
     # -------------------------
     # AUTO MODE
@@ -125,11 +154,11 @@ def invoke_llm(messages, provider="Auto"):
 
     if USE_GROQ_ONLY:
         print("\nUsing Groq...\n")
-        return groq_llm.invoke(messages)
+        return groq_llm.invoke(messages_to_send)
 
     try:
         print("\nUsing Gemini...\n")
-        return gemini_llm.invoke(messages)
+        return gemini_llm.invoke(messages_to_send)
 
     except ResourceExhausted:
 
@@ -138,7 +167,7 @@ def invoke_llm(messages, provider="Auto"):
 
         USE_GROQ_ONLY = True
 
-        return groq_llm.invoke(messages)
+        return groq_llm.invoke(messages_to_send)
 
     except Exception as e:
 
@@ -147,4 +176,4 @@ def invoke_llm(messages, provider="Auto"):
 
         USE_GROQ_ONLY = True
 
-        return groq_llm.invoke(messages)
+        return groq_llm.invoke(messages_to_send)

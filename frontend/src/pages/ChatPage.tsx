@@ -3,7 +3,16 @@ import { motion } from 'framer-motion';
 import { Copy, Paperclip, Send, Sparkles, Trash2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { postChat } from '../api/chatService';
+import ChatSidebar from "../components/chat/ChatSidebar";
+
+
+import {
+    postChat,
+    createSession,
+    getSessions,
+    getSession,
+    deleteSession,
+} from "../api/chatService";
 import type { ChatMessage } from '../types';
 
 const starterPrompts = [
@@ -22,9 +31,15 @@ const initialMessages: ChatMessage[] = [
     toolSteps: ['Thinking...', 'Reading IMD Dataset...', 'Generating Response...'],
   },
 ];
+import type {
+    ChatSession,
+    ChatMessage as ApiChatMessage,
+} from "../api/chatService";
 
 export function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [currentSession, setCurrentSession] = useState<string | null>(null);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [activeTool, setActiveTool] = useState<string | null>(null);
@@ -34,6 +49,137 @@ export function ChatPage() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
+
+  useEffect(() => {
+
+    loadSessions();
+
+},[]);
+
+async function handleNewChat() {
+
+    const session = await createSession();
+
+    setSessions(prev => [session, ...prev]);
+
+    setCurrentSession(session._id);
+
+    setMessages(initialMessages);
+
+}
+
+async function handleDeleteChat() {
+
+    if (!currentSession) return;
+
+    const confirmed = window.confirm(
+        "Delete this conversation?"
+    );
+
+    if (!confirmed) return;
+
+    await deleteSession(currentSession);
+
+    const remaining = await getSessions();
+
+    setSessions(remaining);
+
+    if (remaining.length > 0) {
+
+        setCurrentSession(remaining[0]._id);
+
+        await loadChat(remaining[0]._id);
+
+    } else {
+
+        const newSession = await createSession();
+
+        setSessions([newSession]);
+
+        setCurrentSession(newSession._id);
+
+        setMessages(initialMessages);
+
+    }
+
+}
+
+
+async function loadSessions() {
+
+    const allSessions = await getSessions();
+
+    if (allSessions.length === 0) {
+
+        const session = await createSession();
+
+        setSessions([session]);
+
+        setCurrentSession(session._id);
+
+        setMessages(initialMessages);
+
+        return;
+
+    }
+
+    setSessions(allSessions);
+
+    if (!currentSession) {
+
+        setCurrentSession(allSessions[0]._id);
+
+        await loadChat(allSessions[0]._id);
+
+    }
+
+}
+
+
+
+async function loadChat(id: string) {
+
+    const session = await getSession(id);
+
+    setCurrentSession(id);
+
+    const loadedMessages = session.messages.map((msg: ApiChatMessage) => ({
+
+    id: crypto.randomUUID(),
+
+    role: msg.role,
+
+    content: msg.content,
+
+    timestamp: msg.timestamp
+        ? new Date(msg.timestamp).toLocaleTimeString()
+        : "Now",
+
+    toolSteps:
+        msg.role === "assistant"
+            ? [
+                  "Thinking...",
+                  "Running LangGraph...",
+                  "Reading IMD Dataset...",
+                  "Generating Response..."
+              ]
+            : undefined
+
+}));
+
+    if (loadedMessages.length === 0) {
+
+    setMessages(initialMessages);
+
+}
+else {
+
+    setMessages(loadedMessages);
+
+}
+
+}
+
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -52,16 +198,20 @@ export function ChatPage() {
     setActiveTool('Thinking...');
 
     try {
-      const response = await postChat({ message: userMessage.content });
-      const assistantMessage: ChatMessage = {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: response.reply || 'I am ready to assist.',
-        timestamp: 'Now',
-        toolSteps: ['Thinking...', 'Running LangGraph...', 'Reading IMD Dataset...', 'Generating Response...'],
-      };
+      if (!currentSession) return;
 
-      setMessages((prev) => [...prev, assistantMessage]);
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject);
+    });
+
+    await postChat({
+        session_id: currentSession,
+        message: userMessage.content,
+        lat: position.coords.latitude,
+        lon: position.coords.longitude,
+    });
+      await loadChat(currentSession);
+
       setActiveTool('Generating Response...');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred.');
@@ -83,8 +233,18 @@ export function ChatPage() {
     navigator.clipboard.writeText(content);
   };
 
+
   return (
-    <div className="mx-auto flex h-[850px] w-full max-w-[1100px] flex-col rounded-[32px] border border-slate-800/80 bg-slate-900/70 backdrop-blur-xl">
+    <div className="mx-auto flex h-[850px] w-full max-w-[1400px] overflow-hidden rounded-[32px] border border-slate-800/80 bg-slate-900/70 backdrop-blur-xl">
+
+    <ChatSidebar
+    sessions={sessions}
+    currentSession={currentSession ?? ""}
+    onSelect={loadChat}
+    onNewChat={handleNewChat}
+/>
+
+    <div className="flex flex-1 flex-col">
       <div className="flex items-center justify-between border-b border-slate-800/80 px-4 py-4 sm:px-6">
         <div>
           <p className="text-sm text-slate-400">AI Conversation</p>
@@ -94,9 +254,12 @@ export function ChatPage() {
           <button className="rounded-full border border-slate-700 bg-slate-950/70 p-2 text-slate-300">
             <Sparkles size={16} />
           </button>
-          <button className="rounded-full border border-slate-700 bg-slate-950/70 p-2 text-slate-300">
-            <Trash2 size={16} />
-          </button>
+          <button
+    onClick={() => void handleDeleteChat()}
+    className="rounded-full border border-slate-700 bg-slate-950/70 p-2 text-slate-300 hover:text-red-400"
+>
+    <Trash2 size={16} />
+</button>
         </div>
       </div>
 
@@ -196,6 +359,7 @@ export function ChatPage() {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

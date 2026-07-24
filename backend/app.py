@@ -2,6 +2,12 @@ import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
+from backend.chat.routes import router as chat_router
+
+from backend.chat.service import (
+    append_message,
+    get_chat_session,
+)
 
 from .database import client, MONGODB_URI
 from .database import users
@@ -67,8 +73,11 @@ app.add_middleware(
 
 
 class ChatRequest(BaseModel):
+    session_id: str
     message: str
     provider: str = "Auto"
+    lat: float | None = None
+    lon: float | None = None
 
 class ChatResponse(BaseModel):
     response: str
@@ -81,16 +90,22 @@ def health() -> Dict[str, str]:
 
 
 @app.post("/chat", response_model=ChatResponse)
-def chat(request: ChatRequest):
+async def chat(request: ChatRequest):
 
     try:
-
-        result = graph.invoke(
-    {
-        "messages": [HumanMessage(content=request.message)],
-        "provider": request.provider,
-    }
+        await append_message(
+        request.session_id,
+        "user",
+        request.message
 )
+        result = graph.invoke(
+{
+    "messages": [HumanMessage(content=request.message)],
+    "provider": request.provider,
+    "lat": request.lat,
+    "lon": request.lon,
+})
+
 
         messages = result["messages"]
 
@@ -142,6 +157,12 @@ def chat(request: ChatRequest):
 
         print("\nRETURNING:\n")
         print(text)
+
+        await append_message(
+            request.session_id,
+            "assistant",
+            text
+        )
 
         return ChatResponse(
             response=text
@@ -556,3 +577,4 @@ async def delete_account_api(
         request,
         current_user
     )
+app.include_router(chat_router)

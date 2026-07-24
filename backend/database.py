@@ -16,3 +16,5 @@ client = AsyncIOMotorClient(MONGODB_URI)
 db = client["weatherops"]
 
 users = db["users"]
+
+chat_sessions = db["chat_sessions"]

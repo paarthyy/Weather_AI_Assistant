@@ -26,10 +26,14 @@ def chatbot(state: AgentState):
     return {
         "messages": [
             invoke_llm(
-                state["messages"],
-                provider=provider,
-            )
-        ]
+        state["messages"],
+        provider=provider,
+        lat=state.get("lat"),
+        lon=state.get("lon"),
+    )
+        ],
+        "lat": state.get("lat"),
+        "lon": state.get("lon"),
     }
 
 
