@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from geopy.geocoders import Nominatim
 
 import pandas as pd
 from data.aqi import get_air_quality
@@ -498,20 +499,11 @@ def air_quality_tool(
 ) -> str:
     """
     Get Air Quality Index.
-
-    Use whenever the user asks:
-
-    - Air quality
-    - AQI
-    - Pollution
-    - PM2.5
-    - PM10
     """
 
     data = get_air_quality(lat, lon)
 
     aqi = data["list"][0]["main"]["aqi"]
-
     components = data["list"][0]["components"]
 
     levels = {
@@ -522,22 +514,53 @@ def air_quality_tool(
         5: "Very Poor",
     }
 
+    # Reverse Geocoding
+    geolocator = Nominatim(user_agent="weatherops")
+
+    try:
+        location = geolocator.reverse(
+            f"{lat}, {lon}",
+            language="en"
+        )
+
+        address = location.raw.get("address", {})
+
+        city = (
+            address.get("city")
+            or address.get("town")
+            or address.get("village")
+            or address.get("state_district")
+            or "Unknown"
+        )
+
+        state = address.get("state", "")
+        country = address.get("country", "")
+
+    except Exception:
+        city = "Unknown"
+        state = ""
+        country = ""
+
     return f"""
 Air Quality Report
+
+Location
+--------
+{city}, {state}, {country}
 
 AQI
 ---
 {aqi} ({levels.get(aqi)})
 
-PM2.5 : {components["pm2_5"]}
+PM2.5 : {components["pm2_5"]:.2f} µg/m³
 
-PM10 : {components["pm10"]}
+PM10 : {components["pm10"]:.2f} µg/m³
 
-CO : {components["co"]}
+CO : {components["co"]:.2f} µg/m³
 
-NO2 : {components["no2"]}
+NO₂ : {components["no2"]:.2f} µg/m³
 
-SO2 : {components["so2"]}
+SO₂ : {components["so2"]:.2f} µg/m³
 """
 @tool
 def weather_alert_tool(
