@@ -499,6 +499,10 @@ def air_quality_tool(
     lat: float,
     lon: float,
 ) -> str:
+    """
+    Get the current Air Quality Index (AQI) and pollutant
+    concentrations for the provided latitude and longitude.
+    """
 
     data = get_air_quality(lat, lon)
 
