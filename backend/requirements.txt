@@ -81,5 +81,6 @@ websockets==15.0.1
 xarray==2026.7.0
 xxhash==3.8.1
 zstandard==0.25.0
+geopy==2.5.0
 python-jose[cryptography]
 passlib[bcrypt]

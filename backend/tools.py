@@ -492,14 +492,13 @@ ISP: {loc['isp']}
 
 from langchain_core.tools import tool
 
+from geopy.geocoders import Nominatim
+
 @tool
 def air_quality_tool(
     lat: float,
     lon: float,
 ) -> str:
-    """
-    Get Air Quality Index.
-    """
 
     data = get_air_quality(lat, lon)
 
@@ -514,7 +513,6 @@ def air_quality_tool(
         5: "Very Poor",
     }
 
-    # Reverse Geocoding
     geolocator = Nominatim(user_agent="weatherops")
 
     try:
@@ -542,25 +540,15 @@ def air_quality_tool(
         country = ""
 
     return f"""
-Air Quality Report
+The Air Quality Index (AQI) today in {city}, {state} is {aqi} ({levels[aqi]}).
 
-Location
---------
-{city}, {state}, {country}
+Here are the pollutant levels:
 
-AQI
----
-{aqi} ({levels.get(aqi)})
-
-PM2.5 : {components["pm2_5"]:.2f} µg/m³
-
-PM10 : {components["pm10"]:.2f} µg/m³
-
-CO : {components["co"]:.2f} µg/m³
-
-NO₂ : {components["no2"]:.2f} µg/m³
-
-SO₂ : {components["so2"]:.2f} µg/m³
+PM2.5: {components["pm2_5"]:.2f} µg/m³
+PM10: {components["pm10"]:.2f} µg/m³
+CO: {components["co"]:.2f} µg/m³
+NO₂: {components["no2"]:.2f} µg/m³
+SO₂: {components["so2"]:.2f} µg/m³
 """
 @tool
 def weather_alert_tool(
