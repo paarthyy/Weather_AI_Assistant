@@ -500,9 +500,14 @@ def air_quality_tool(
     lon: float,
 ) -> str:
     """
-    Get the current Air Quality Index (AQI) and pollutant
-    concentrations for the provided latitude and longitude.
-    """
+        Get the current Air Quality Index (AQI) and pollutant
+        concentrations for the provided latitude and longitude.
+        """
+    print("=" * 60)
+    print("AIR QUALITY TOOL")
+    print("Incoming lat:", lat)
+    print("Incoming lon:", lon)
+    print("=" * 60)
 
     data = get_air_quality(lat, lon)
 
@@ -527,6 +532,9 @@ def air_quality_tool(
 
         address = location.raw.get("address", {})
 
+        print("Reverse geocoder address:")
+        print(address)
+
         city = (
             address.get("city")
             or address.get("town")
@@ -542,6 +550,23 @@ def air_quality_tool(
         city = "Unknown"
         state = ""
         country = ""
+
+    response = f"""
+    The Air Quality Index (AQI) today in {city}, {state} is {aqi} ({levels[aqi]}).
+
+    Here are the pollutant levels:
+
+    PM2.5: {components["pm2_5"]:.2f} µg/m³
+    PM10: {components["pm10"]:.2f} µg/m³
+    CO: {components["co"]:.2f} µg/m³
+    NO₂: {components["no2"]:.2f} µg/m³
+    SO₂: {components["so2"]:.2f} µg/m³
+    """
+
+    print("TOOL RESPONSE:")
+    print(response)
+
+    return response
 
     return f"""
 The Air Quality Index (AQI) today in {city}, {state} is {aqi} ({levels[aqi]}).

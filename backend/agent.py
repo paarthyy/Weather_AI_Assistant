@@ -79,7 +79,7 @@ groq = ChatGroq(
 # Register tools
 # -------------------------
 
-tools = [
+tools_without_location = [
     list_datasets,
     load_station_data,
     calculate_bias,
@@ -91,19 +91,20 @@ tools = [
     compare_two_stations,
     search_nearby_stations,
     get_live_weather,
-    get_my_location,
     air_quality_tool,
     weather_alert_tool,
     weather_advisory_tool,
+]
+
+tools_with_location = tools_without_location + [
+    get_my_location,
 ]
 
 # -------------------------
 # Bind tools
 # -------------------------
 
-gemini_llm = gemini.bind_tools(tools)
 
-groq_llm = groq.bind_tools(tools)
 
 # ---------------------------------
 # Model Routing State
@@ -114,6 +115,15 @@ def invoke_llm(messages, provider="Auto", lat=None, lon=None):
 
     global USE_GROQ_ONLY
     messages_to_send = messages
+    # If frontend already provided coordinates,
+    # remove get_my_location from available tools.
+
+    if lat is not None and lon is not None:
+        gemini_llm = gemini.bind_tools(tools_without_location)
+        groq_llm = groq.bind_tools(tools_without_location)
+    else:
+        gemini_llm = gemini.bind_tools(tools_with_location)
+        groq_llm = groq.bind_tools(tools_with_location)
 
     if lat is not None and lon is not None:
         messages_to_send = [

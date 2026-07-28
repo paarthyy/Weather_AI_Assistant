@@ -10,10 +10,10 @@ if str(BACKEND_DIR) not in sys.path:
 
 try:
     from .state import AgentState
-    from .agent import invoke_llm, tools
+    from .agent import invoke_llm, tools_with_location
 except ImportError:
     from state import AgentState
-    from agent import invoke_llm, tools
+    from agent import invoke_llm, tools_with_location
 
 # -------------------------------
 # Chatbot Node
@@ -35,6 +35,7 @@ def chatbot(state: AgentState):
         "lat": state.get("lat"),
         "lon": state.get("lon"),
     }
+    
 
 
 # -------------------------------
@@ -44,7 +45,7 @@ def chatbot(state: AgentState):
 builder = StateGraph(AgentState)
 
 builder.add_node("chatbot", chatbot)
-builder.add_node("tools", ToolNode(tools))
+builder.add_node("tools", ToolNode(tools_with_location))
 
 builder.add_edge(START, "chatbot")
 
